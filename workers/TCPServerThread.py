@@ -47,6 +47,7 @@ class Client(protocol.Protocol, TimeoutMixin):
         self.t = ""
         self.found_arr = 0
         self.sent = 0
+        self.task_man.registerNewClient( self )
         #self.tcp_man.registerNewSocket( self )
 
     
@@ -141,9 +142,7 @@ class Client(protocol.Protocol, TimeoutMixin):
         self.logger.sendMsg( msg )
 
     def timeoutConnection(self):
-        if "\"tracker_id\":117" in self.buffer:
-             print( self.buffer )
-        
+        self.data_man.removeClient( self )
         self.transport.abortConnection()
     
     def conditionalWrite( self, dat ):
@@ -264,6 +263,7 @@ class Client(protocol.Protocol, TimeoutMixin):
 
     def connectionLost(self, reason):
         self.factory.clientConnectionLost(self)
+        self.data_man.removeClient( self )
         #self.log( "Disc" )
         
     def step(self):
@@ -271,7 +271,7 @@ class Client(protocol.Protocol, TimeoutMixin):
         
         for task in self.active_tasks:
             if task.done == 1:
-                ##print( json.dumps( task.result ) )
+                ##pr int( json.dumps( task.result ) )
                 try:
                     if task.callback != 0:
                         task.callback( json.dumps( task.result ) )
@@ -349,12 +349,23 @@ class EchoFactory(protocol.Factory):
         self.clients.remove(client)
 
     def buildProtocol(self, addr):
-        return Client( self.task_manager, self.data_man, self, self.command_packet )
+        return Client( self.task_manager, self.parent, self, self.command_packet )
 
 class TCPServerThread(Worker):
-     def __init__( self, com_link ):
-         Worker.__init__( self, "TCPServerThread" )
+     def __init__( self, com_link, semaphore ):
+         Worker.__init__( self, "TCPServerThread", semaphore )
          self.com_link = com_link
+         self.owner = semaphore
+         self.clients = []
+         
+     def registerNewClient( self, client ):
+        self.clients.append( client )
+     
+     def removeClient( self, client ):
+        if client in self.clients:
+            self.clients.remove( client )
+        
+     
      def step( self ):
          self.instance =  EchoFactory( self.com_link, 0, self )
          endpoints.serverFromString(reactor, "tcp:{0}".format( 9994 )).listen( self.instance )

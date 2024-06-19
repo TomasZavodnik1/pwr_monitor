@@ -1,7 +1,7 @@
 import os
 class HWVersions:
-    CM1_0 = 15
-    CM1_0_SLEEVE = 16
+    CM1_5 = 15
+    CM1_5_SLEEVE = 16
     CM2_0 = 20
     CCB3_0 = 30
 
@@ -25,7 +25,8 @@ class HWDetector:
     
     @staticmethod   
     def checkIfFileExists( file ):
-        return os.is_file( file )
+        print( file )
+        return os.path.isfile( file )
         
     @staticmethod 
     def detectVersion():
@@ -33,16 +34,16 @@ class HWDetector:
        device_0_45_exists = HWDetector.checkIfFileExists(  HWDetector.createPathFromAddressAndInstance( 2, 0x45 )  )
        device_0_44_exists = HWDetector.checkIfFileExists(  HWDetector.createPathFromAddressAndInstance( 4, 0x44 )  )       
        device_0_41_exists = HWDetector.checkIfFileExists(  HWDetector.createPathFromAddressAndInstance( 2, 0x41 )  )      
-       if ( device_0_46_exists == true ):
+       if ( device_0_46_exists == True ):
            return HWVersions.CM2_0
            
-       if ( device_0_45_exists == true ):
+       if ( device_0_45_exists == True ):
            return HWVersions.CM1_0_SLEEVE       
            
-       if ( device_0_44_exists == true ):
+       if ( device_0_44_exists == True ):
            return HWVersions.CM1_0                
            
-       if ( device_0_41_exists == true ):           
+       if ( device_0_41_exists == True ):           
            return HWVersions.CM3_0
            
        return 0
@@ -68,14 +69,14 @@ class HWDetector:
     def createCSVHeader( hw_version ):
        files = []
        csv_header = ""
-       if ( hw_version == HWVersions.CM1_0_SLEEVE ):
+       if ( hw_version == HWVersions.CM1_5_SLEEVE ):
            files.append( HWDetector.createPathFromAddressAndInstance( 2, 0x40 ) )
            files.append( HWDetector.createPathFromAddressAndInstance( 2, 0x45 ) )
            files.append( HWDetector.createPathFromAddressAndInstance( 4, 0x41 ) )
            files.append( HWDetector.createPathFromAddressAndInstance( 4, 0x44 ) )
            csv_header = "time(UNIX TIMESTAMP),2-0x40(nrf),2-0x45(mPcie_total),4-0x41(dc_jack),4-0x44(???),calculated(main_power_without_mpcie_nrf)"
            
-       if ( hw_version == HWVersions.CM1_0 ):
+       if ( hw_version == HWVersions.CM1_5 ):
            files.append( HWDetector.createPathFromAddressAndInstance( 4, 0x41 ) )
            files.append( HWDetector.createPathFromAddressAndInstance( 4, 0x44 ) )
            csv_header = "time(UNIX TIMESTAMP),4-0x41(dc_jack),4-0x44(???)"

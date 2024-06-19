@@ -40,10 +40,10 @@ class Worker(threading.Thread):
    def getNextMsg( self ):
       return self.queue.get()
    def run( self ):
-     while ( self.go == 1 and self.owener.stop_all == 0 ):
+     while ( self.go == 1 and self.owner.stop_all == 0 ):
          if ( self.step() == -1 ):
-             self.go = false
-             self.owener.stop_all = 1
+             self.go = False
+             self.owner.stop_all = 1
              return -1
          time.sleep( 0.001 )
  
